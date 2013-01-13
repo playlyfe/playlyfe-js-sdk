@@ -1118,10 +1118,11 @@ window.Zepto = Zepto
     var settings = $.extend({}, options || {})
     for (key in $.ajaxSettings) if (settings[key] === undefined) settings[key] = $.ajaxSettings[key]
 
-    ajaxStart(settings)
+    ajaxStart(settings);
 
     if (!settings.crossDomain) settings.crossDomain = /^([\w-]+:)?\/\/([^\/]+)/.test(settings.url) &&
       RegExp.$2 != window.location.host
+    console.log(settings.crossDomain);
 
     var dataType = settings.dataType, hasPlaceholder = /=\?/.test(settings.url)
     if (dataType == 'jsonp' || hasPlaceholder) {

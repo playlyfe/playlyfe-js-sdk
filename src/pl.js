@@ -8,10 +8,10 @@
     var statusListeners = [];
     var c_access_token = null;
 
-    var LOGOUT_ENDPOINT = 'http://localhost:8080/logout';
-    var TOKEN_ENDPOINT = 'http://localhost:8080/auth';
-    var XDM_ENDPOINT = 'http://localhost:8080/xdm';
-    var API_ENDPOINT = 'http://api.localhost:8080';
+    var LOGOUT_ENDPOINT = 'http://playlyfe.com/logout';
+    var TOKEN_ENDPOINT = 'http://playlyfe.com/auth';
+    var XDM_ENDPOINT = 'http://playlyfe.com/xdm';
+    var API_ENDPOINT = 'http://api.playlyfe.com';
 
     var $ = window.jQuery || window.Zepto;
 
@@ -171,7 +171,7 @@
           try {
             this.oAuthCall(_route, _method, JSON.stringify(_data), _callback, _handleError);
           } catch (e) {
-            console.log(e);
+            console.log(e.message);
           }
         };
         this.getLoginLink = function() {
@@ -197,6 +197,8 @@
           var path = (query_pos > 0) ? route.slice(0, query_pos): route;
 
           route = path + '?' + QS.encode({ access_token: access_token }) + ( (query.length > 0) ? ('&' + query) : '' );
+        } else {
+          throw new Error('No access token found');
         }
         if(settings.debug) console.log(route, method, data);
 
