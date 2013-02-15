@@ -1,7 +1,7 @@
 (function() {
-  var Playlyfe = function() {
+  var Playlyfe = function($) {
     // 0 - unknown, 1 - logged in, 2 - connected
-    var status = { code: 0, msg: 'unknown' };
+    var status = { code: -1, msg: 'unintialized' };
     var settings = {};
 
     var uid = -1;
@@ -12,8 +12,6 @@
     var TOKEN_ENDPOINT = 'http://playlyfe.com/auth';
     var XDM_ENDPOINT = 'http://playlyfe.com/xdm';
     var API_ENDPOINT = 'http://api.playlyfe.com';
-
-    var $ = window.jQuery || window.Zepto;
 
     var socket = null;
 
@@ -108,6 +106,9 @@
 
     return {
       init: function(options) {
+        settings.client_id = options.client_id;
+        settings.redirect_uri = options.redirect_uri;
+        settings.debug = options.debug;
         var session = QS.decode(window.location.hash.slice(1));
         c_access_token = 'pl_'+settings.client_id+'_access_token';
         if (session && session.access_token && session.token_type) {
@@ -118,9 +119,6 @@
           var expires_on = new Date(now.getTime() + session.expires_in * 1000);
           Cookie.set(c_access_token, session.access_token,  { expires: expires_on });
         }
-        settings.client_id = options.client_id;
-        settings.redirect_uri = options.redirect_uri;
-        settings.debug = options.debug;
         socket = new easyXDM.Socket({
           container: 'pl-root',
           props: { style: { display: 'none' } },
@@ -155,7 +153,7 @@
           }
           if (args.length === 4) {
             // fn (route, method, data, callback)
-            if(!isObject(args[2])) throw Error('Invalid parameters provided, only JSON objects are accepted');
+            if(!isObject(args[2]) && !isArray(args[2])) throw Error('Invalid parameters provided, only JSON objects are accepted');
             if(_method === 'GET') throw Error('GET requests cannot pass data');
             else _data = args[2];
           }
@@ -169,7 +167,7 @@
           };
           // Make oauth call
           try {
-            this.oAuthCall(_route, _method, JSON.stringify(_data), _callback, _handleError);
+            return this.oAuthCall(_route, _method, JSON.stringify(_data), _callback, _handleError);
           } catch (e) {
             console.log(e.message);
           }
@@ -214,12 +212,11 @@
           error: error
         };
 
-        if( method !== 'POST' || method !== 'PUT') {
+        if( method !== 'POST' && method !== 'PUT') {
           delete ajaxOptions.contentType;
           delete ajaxOptions.data;
         }
-
-        $.ajax(ajaxOptions);
+        return $.ajax(ajaxOptions);
       },
       onStatusChange: function(func, context) {
         if (context === undefined) context = this;
@@ -243,7 +240,10 @@
     };
   };
 
-
-  window.Playlyfe = new Playlyfe();
+  if (typeof define !== 'undefined') {
+    define('playlyfe', ['jquery'], function ($) { return new Playlyfe($); });
+  } else {
+    window.Playlyfe = new Playlyfe();
+  }
   return;
 }());
