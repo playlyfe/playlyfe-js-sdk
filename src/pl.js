@@ -9,7 +9,8 @@
     var c_access_token = null;
 
     var LOGOUT_ENDPOINT = 'http://playlyfe.com/logout';
-    var TOKEN_ENDPOINT = 'http://playlyfe.com/auth';
+    var AUTH_ENDPOINT = 'http://playlyfe.com/auth';
+    var TOKEN_ENDPOINT = 'http://playlyfe.com/auth/token';
     var XDM_ENDPOINT = 'http://playlyfe.com/xdm';
     var API_ENDPOINT = 'http://api.playlyfe.com';
 
@@ -106,33 +107,45 @@
 
     return {
       init: function(options) {
-        settings.client_id = options.client_id;
-        settings.redirect_uri = options.redirect_uri;
         settings.debug = options.debug;
-        var session = QS.decode(window.location.hash.slice(1));
-        c_access_token = 'pl_'+settings.client_id+'_access_token';
-        if (session && session.access_token && session.token_type) {
-          window.location.hash = '';
-          // Set default token duration
-          if(session.expires_in === undefined) session.expires_in = 3600;
-          var now = new Date();
-          var expires_on = new Date(now.getTime() + session.expires_in * 1000);
-          Cookie.set(c_access_token, session.access_token,  { expires: expires_on });
-        }
-        socket = new easyXDM.Socket({
-          container: 'pl-root',
-          props: { style: { display: 'none' } },
-          remote: XDM_ENDPOINT,
-          onMessage: function(message, origin) {
-            newStatus = JSON.parse(message);
-            if (status.code !== newStatus.code) {
-              status = newStatus;
-              triggerStatusListeners();
-            }
+        settings.proxy = options.proxy;
+
+        // For simple client side implict grant flow
+        if(settings.proxy == null) {
+          settings.client_id = options.client_id;
+          settings.redirect_uri = options.redirect_uri;
+          var session = QS.decode(window.location.hash.slice(1));
+          c_access_token = 'pl_'+settings.client_id+'_access_token';
+          if (session && session.access_token && session.token_type) {
+            window.location.hash = '';
+            // Set default token duration
+            if(session.expires_in === undefined) session.expires_in = 3600;
+            var now = new Date();
+            var expires_on = new Date(now.getTime() + session.expires_in * 1000);
+            Cookie.set(c_access_token, session.access_token,  { expires: expires_on });
           }
-        });
-        // login status
-        this.getCurrentStatus();
+          socket = new easyXDM.Socket({
+            container: 'pl-root',
+            props: { style: { display: 'none' } },
+            remote: XDM_ENDPOINT,
+            onMessage: function(message, origin) {
+              newStatus = JSON.parse(message);
+              if (status.code !== newStatus.code) {
+                status = newStatus;
+                triggerStatusListeners();
+              }
+            }
+          });
+
+          this.getAccessToken = function() {
+            return Cookie.get(c_access_token);
+          };
+
+        } else {
+          // Proxy api through server side authorization code flow which is more secure.
+          API_ENDPOINT = settings.proxy;
+        }
+
         this.api =  function() {
           var args = Array.prototype.slice.call(arguments);
           var _route, _method = 'GET', _data = {}, _callback;
@@ -162,7 +175,6 @@
             response = JSON.parse(data.responseText);
             if(response.error === 'invalid_grant') {
               console.log(response.error_description);
-              that.refreshAccessToken();
             }
           };
           // Make oauth call
@@ -172,32 +184,68 @@
             console.log(e.message);
           }
         };
+
+        this.getCurrentStatus = function() {
+          if(settings.proxy == null) {
+            socket.postMessage(JSON.stringify({ code: 0, token: this.getAccessToken() }));
+          } else {
+            this.api('/status', function(newStatus) {
+              if (status.code !== newStatus.code) {
+                status = newStatus;
+                triggerStatusListeners();
+              }
+            });
+          }
+        };
+
         this.getLoginLink = function() {
-          return TOKEN_ENDPOINT + '?response_type=token&client_id=' + encodeURIComponent(settings.client_id) + '&redirect_uri=' + encodeURIComponent(settings.redirect_uri);
+          if(settings.proxy == null) {
+            return AUTH_ENDPOINT + '?response_type=token&client_id=' + encodeURIComponent(settings.client_id) + '&redirect_uri=' + encodeURIComponent(settings.redirect_uri);
+          } else {
+            return AUTH_ENDPOINT + '?response_type=code&client_id=' + encodeURIComponent(settings.client_id) + '&redirect_uri=' + encodeURIComponent(settings.redirect_uri);
+          }
         };
-        this.getLogoutLink = function() {
-          return LOGOUT_ENDPOINT;
+
+        this.getLogoutLink = function(next) {
+          if(next)
+            return LOGOUT_ENDPOINT + '?next=' + encodeURIComponent(next);
+          else
+            return LOGOUT_ENDPOINT + '?next=' + encodeURIComponent(window.location);
         };
+
         this.login = function() {
           window.location = this.getLoginLink();
         };
+
         this.logout = function() {
-          socket.postMessage(JSON.stringify({ code: 1, token: 'test'}));
+          if (settings.proxy == null) {
+            socket.postMessage(JSON.stringify({ code: 1, token: this.getAccessToken() }));
+          } else {
+            window.location = this.getLogoutLink();
+          }
         };
+
+        // get login status
+        this.getCurrentStatus();
       },
       oAuthCall: function (route, method, data, success, error) {
-        var access_token = this.getAccessToken();
 
-        if(access_token !== null) {
-          // Attach access token
-          var query_pos = route.indexOf('?');
-          var query = (query_pos > 0) ? route.slice(query_pos + 1) : '';
-          var path = (query_pos > 0) ? route.slice(0, query_pos): route;
+        if(settings.proxy == null) {
+          // The client gets the access token only in a client side flow.
+          var access_token = this.getAccessToken();
 
-          route = path + '?' + QS.encode({ access_token: access_token }) + ( (query.length > 0) ? ('&' + query) : '' );
-        } else {
-          throw new Error('No access token found');
+          if(access_token !== null) {
+            // Attach access token
+            var query_pos = route.indexOf('?');
+            var query = (query_pos > 0) ? route.slice(query_pos + 1) : '';
+            var path = (query_pos > 0) ? route.slice(0, query_pos): route;
+
+            route = path + '?' + QS.encode({ access_token: access_token }) + ( (query.length > 0) ? ('&' + query) : '' );
+          } else {
+            throw new Error('No access token found');
+          }
         }
+
         if(settings.debug) console.log(route, method, data);
 
         ajaxOptions = {
@@ -216,6 +264,9 @@
           delete ajaxOptions.contentType;
           delete ajaxOptions.data;
         }
+
+        if(settings.proxy != null) ajaxOptions.crossDomain = false;
+
         return $.ajax(ajaxOptions);
       },
       onStatusChange: function(func, context) {
@@ -230,12 +281,6 @@
       },
       getStatus: function() {
         return status;
-      },
-      getCurrentStatus: function(done) {
-        socket.postMessage(JSON.stringify({ code: 0, token: this.getAccessToken() }));
-      },
-      getAccessToken: function() {
-        return Cookie.get(c_access_token);
       }
     };
   };
