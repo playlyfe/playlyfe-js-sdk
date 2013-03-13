@@ -2,6 +2,7 @@ Playlyfe Javascript SDK
 ==================
 The Playlyfe Javascript allows developers to access the Playlyfe API in browser applications. This sdk uses the OAuth 2.0 implicit grant flow to obtain an access token which can then be used to make API calls.
 
+Visit the official [Playlyfe Developers Documentaion](http://dev.playlyfe.com/).
 ##Usage
 ###Step 1: Include the Playlyfe JS SDK in your page.
 The js sdk requires an ajax transport to function properly. Since jQuery has become a ubiquitous library on almost all sites we decided to decouple the ajax transport from the core sdk to cut down the size. You must include either **jQuery**(or **Zepto** for mobile applications) before the **Playlyfe JS SDK**. 
