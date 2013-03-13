@@ -288,7 +288,8 @@
   if (typeof define !== 'undefined') {
     define('playlyfe', ['jquery'], function ($) { return new Playlyfe($); });
   } else {
-    window.Playlyfe = new Playlyfe();
+    var $ = window.jQuery;
+    window.Playlyfe = new Playlyfe($);
   }
   return;
 }());
