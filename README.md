@@ -88,8 +88,8 @@ Below is a complete simple single page application that fetches and displays the
 
             // Initialize the Playlyfe JS SDK
             Playlyfe.init({
-              client_id: 'YTE1MzBiMzctZDJiYS00MTQzLWIyZWMtZjU1NjllODk4NTJm',
-              redirect_uri: 'http://games.playlyfe.com/pomodoro'
+              client_id: 'YOUR_CLIENT_ID',
+              redirect_uri: 'YOUR_REDIRECT_URI'
             });
 
           });
@@ -116,7 +116,7 @@ Initializes the sdk with the given configuration.
 ##### Options 
 <table>
   <thead>
-    <tr><th>parameter</th><th>Description</th></tr>
+    <tr><th>Parameter</th><th>Description</th></tr>
   </thead>
   <tbody>
     <tr><td>client_id</td><td>Client ID of the application.</td></tr>
