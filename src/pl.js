@@ -1,26 +1,15 @@
 (function() {
-  var Playlyfe = function($) {
+  var Playlyfe = function($, eio) {
     // 0 - unknown, 1 - logged in, 2 - connected
     var status = { code: -1, msg: 'unintialized' };
     var settings = {};
 
     var uid = -1;
-    var statusListeners = [];
     var c_access_token = null;
 
-    var LOGOUT_ENDPOINT = 'http://playlyfe.com/logout';
-    var AUTH_ENDPOINT = 'http://playlyfe.com/auth';
-    var TOKEN_ENDPOINT = 'http://playlyfe.com/auth/token';
-    var XDM_ENDPOINT = 'http://playlyfe.com/xdm';
-    var API_ENDPOINT = 'http://api.playlyfe.com';
-
-    var socket = null;
-
-    var triggerStatusListeners = function() {
-      for(var i = 0; i < statusListeners.length; i++) {
-        statusListeners[i].func.call(statusListeners[i].context, status);
-      }
-    };
+    var LOGOUT_ENDPOINT = 'https://playlyfe.com/logout';
+    var TOKEN_ENDPOINT = 'https://playlyfe.com/auth';
+    var API_ENDPOINT = 'https://api.playlyfe.com/v1';
 
     // Utility functions
     var _toString = Object.prototype.toString;
@@ -108,43 +97,26 @@
     return {
       init: function(options) {
         settings.debug = options.debug;
-        settings.proxy = options.proxy;
 
         // For simple client side implict grant flow
-        if(settings.proxy == null) {
-          settings.client_id = options.client_id;
-          settings.redirect_uri = options.redirect_uri;
-          var session = QS.decode(window.location.hash.slice(1));
-          c_access_token = 'pl_'+settings.client_id+'_access_token';
-          if (session && session.access_token && session.token_type) {
-            window.location.hash = '';
-            // Set default token duration
-            if(session.expires_in === undefined) session.expires_in = 3600;
-            var now = new Date();
-            var expires_on = new Date(now.getTime() + session.expires_in * 1000);
-            Cookie.set(c_access_token, session.access_token,  { expires: expires_on });
-          }
-          socket = new easyXDM.Socket({
-            container: 'pl-root',
-            props: { style: { display: 'none' } },
-            remote: XDM_ENDPOINT,
-            onMessage: function(message, origin) {
-              newStatus = JSON.parse(message);
-              if (status.code !== newStatus.code) {
-                status = newStatus;
-                triggerStatusListeners();
-              }
-            }
-          });
+        settings.client_id = options.client_id;
+        settings.redirect_uri = options.redirect_uri;
 
-          this.getAccessToken = function() {
-            return Cookie.get(c_access_token);
-          };
+        var session = QS.decode(window.location.hash.slice(1));
+        c_access_token = 'pl_'+settings.client_id+'_access_token';
 
-        } else {
-          // Proxy api through server side authorization code flow which is more secure.
-          API_ENDPOINT = settings.proxy;
+        if (session && session.access_token && session.token_type) {
+          window.location.hash = '';
+          // Set default token duration
+          if(session.expires_in === undefined) session.expires_in = 3600;
+          var now = new Date();
+          var expires_on = new Date(now.getTime() + session.expires_in * 1000);
+          Cookie.set(c_access_token, session.access_token,  { expires: expires_on });
         }
+
+        this.getAccessToken = function() {
+          return Cookie.get(c_access_token);
+        };
 
         this.api =  function() {
           var args = Array.prototype.slice.call(arguments);
@@ -181,57 +153,20 @@
           try {
             return this.oAuthCall(_route, _method, JSON.stringify(_data), _callback, _handleError);
           } catch (e) {
-            console.log(e.message);
-          }
-        };
-
-        this.getCurrentStatus = function() {
-          if(settings.proxy == null) {
-            socket.postMessage(JSON.stringify({ code: 0, token: this.getAccessToken() }));
-          } else {
-            this.api('/status', function(newStatus) {
-              if (status.code !== newStatus.code) {
-                status = newStatus;
-                triggerStatusListeners();
-              }
-            });
+            console.log(e.stack);
           }
         };
 
         this.getLoginLink = function() {
-          if(settings.proxy == null) {
-            return AUTH_ENDPOINT + '?response_type=token&client_id=' + encodeURIComponent(settings.client_id) + '&redirect_uri=' + encodeURIComponent(settings.redirect_uri);
-          } else {
-            return AUTH_ENDPOINT + '?response_type=code&client_id=' + encodeURIComponent(settings.client_id) + '&redirect_uri=' + encodeURIComponent(settings.redirect_uri);
-          }
+          return 'https://playlyfe.com/auth?response_type=token&client_id=' + encodeURIComponent(settings.client_id) + '&redirect_uri=' + encodeURIComponent(settings.redirect_uri);
         };
 
-        this.getLogoutLink = function(next) {
-          if(next)
-            return LOGOUT_ENDPOINT + '?next=' + encodeURIComponent(next);
-          else
-            return LOGOUT_ENDPOINT + '?next=' + encodeURIComponent(window.location);
+        this.getLogoutLink = function() {
+          return LOGOUT_ENDPOINT;
         };
 
-        this.login = function() {
-          window.location = this.getLoginLink();
-        };
+        this.oAuthCall = function (route, method, data, success, error) {
 
-        this.logout = function() {
-          if (settings.proxy == null) {
-            socket.postMessage(JSON.stringify({ code: 1, token: this.getAccessToken() }));
-          } else {
-            window.location = this.getLogoutLink();
-          }
-        };
-
-        // get login status
-        this.getCurrentStatus();
-      },
-      oAuthCall: function (route, method, data, success, error) {
-
-        if(settings.proxy == null) {
-          // The client gets the access token only in a client side flow.
           var access_token = this.getAccessToken();
 
           if(access_token !== null) {
@@ -244,52 +179,93 @@
           } else {
             throw new Error('No access token found');
           }
-        }
 
-        if(settings.debug) console.log(route, method, data);
+          if(settings.debug) console.log(route, method, data);
 
-        ajaxOptions = {
-          url: API_ENDPOINT + route,
-          type: method,
-          dataType: 'json',
-          contentType: 'application/json',
-          processData: false,
-          crossDomain: true,
-          data: data,
-          success: success,
-          error: error
+          ajaxOptions = {
+            url: API_ENDPOINT + route,
+            type: method,
+            dataType: 'json',
+            contentType: 'application/json',
+            processData: false,
+            crossDomain: true,
+            data: data,
+            success: success,
+            error: error
+          };
+
+          if( method !== 'POST' && method !== 'PUT') {
+            delete ajaxOptions.contentType;
+            delete ajaxOptions.data;
+          }
+
+          return $.ajax(ajaxOptions);
         };
 
-        if( method !== 'POST' && method !== 'PUT') {
-          delete ajaxOptions.contentType;
-          delete ajaxOptions.data;
+        this.login = function() {
+          window.location = this.getLoginLink();
+        };
+
+        this.logout = function() {
+          window.location = this.getLogoutLink();
+        };
+
+        if (Cookie.get(c_access_token) != null) {
+          status = { code: 1, msg: 'authenticated' };
+        } else {
+          status = { code: 0, msg: 'unknown' };
         }
+      },
 
-        if(settings.proxy != null) ajaxOptions.crossDomain = false;
-
-        return $.ajax(ajaxOptions);
-      },
-      onStatusChange: function(func, context) {
-        if (context === undefined) context = this;
-        token = statusListeners.length;
-        statusListeners.push({ func: func, context: context });
-        return token;
-      },
-      offStatusChange: function(token) {
-        statusListeners.splice(token, 1);
-        return;
-      },
       getStatus: function() {
         return status;
+      },
+
+      openNotificationStream: function (env, game_id, player_id, token, success, error) {
+        var socket = new eio.Socket({
+          host: 'api.playlyfe.com',
+          port: 443,
+          secure: true,
+          path: '/v1/notifications/stream',
+          transports: ['websocket', 'polling']
+        });
+        var state = -1
+        socket.on('open', function () {
+          console.info('Sockets Open');
+          socket.on('message', function (msg) {
+            switch (msg) {
+              case 'AUTH_CHALLENGE':
+                socket.send("AUTH_RESPONSE " + token + " player " + env + " " + game_id + " " + player_id);
+                break;
+              case 'AUTH_SUCCESS':
+                console.info('Notifications Up');
+                break;
+              default:
+                if (msg.indexOf('AUTH_FAILED') > -1) {
+                  if (error != null) {
+                    error(new Error('Socket Authorization Failed: ' + msg));
+                  } else {
+                    throw new Error('Socket Authorization Failed: ' + msg);
+                  }
+                } else {
+                  msg = JSON.parse(msg.slice(msg.indexOf(' ')));
+                  success(msg);
+                }
+            }
+          });
+        });
+        return socket;
       }
+
     };
   };
 
   if (typeof define !== 'undefined') {
-    define('playlyfe', ['jquery'], function ($) { return new Playlyfe($); });
+    define('playlyfe', ['jquery', 'eio'], function ($, eio) { return new Playlyfe($, eio); });
   } else {
     var $ = window.jQuery;
-    window.Playlyfe = new Playlyfe($);
+    var eio = window.eio;
+    window.Playlyfe = new Playlyfe($, eio);
   }
   return;
 }());

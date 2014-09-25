@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="engineio.js"></script>
+    <script type="text/javascript" src="pl.js"></script>
+    <script type="text/javascript">
+      var player_id = 'test';
+      var env = 'staging';
+      var game_id = 'GoE';
+
+      var notification_handler = function (data) {
+        console.log("Received Notification: ", data);
+      }
+
+      // Open up a front-end client
+      var client = new Playlyfe.init({
+        client_id: 'MmQ4ZGNiNWMtOWQ0Zi00NjQ4LWJjNmYtNjQ3ZTJkMzNkODc0',
+        redirect_uri: 'http://localhost:8081'
+      });
+      if (Playlyfe.getStatus().code === 0) {
+        client.login();
+      } else {
+        client.api('/notifications/token?player_id=' + player_id, 'GET', function (data) {
+           Playlyfe.openNotificationStream(env, game_id, player_id, data.token, notification_handler);
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <button>Login</button>
+    <h1>Notification Feed</h1>
+    <div>no notifications</div>
+  </body>
+</html>

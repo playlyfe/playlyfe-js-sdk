@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="pl.min.js"></script>
+    <script type="text/javascript">
+      var player_id = 'YOUR_PLAYER_ID';
+      var env = 'YOUR_GAME_ENVIRONMENT ( "staging" or "production" )';
+      var game_id = 'YOUR_GAME_ID';
+
+      var notification_handler = function (data) {
+        console.log("Received Notification: ", data);
+      }
+
+      // Open up a front-end client
+      var client = new Playlyfe.init({
+        client_id: 'YOUR_CLIENT_ID',
+        redirect_uri: 'YOUR_REDIRECT_URI'
+      });
+      // If the user is not logged in then login
+      if (Playlyfe.getStatus().msg !== 'authenticated') {
+        client.login();
+      } else {
+        // Fetch a notification stream authorization token
+        client.api('/notifications/token?player_id=' + player_id, 'GET', function (data) {
+           // Open a notification stream for a specific player
+           Playlyfe.openNotificationStream(env, game_id, player_id, data.token, notification_handler);
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <button>Login</button>
+    <h1>Notification Feed</h1>
+    <div>no notifications</div>
+  </body>
+</html>

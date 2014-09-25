@@ -1,0 +1,22 @@
+{
+  "name": "playlyfe-js-sdk",
+  "version": "0.0.1",
+  "homepage": "https://github.com/playlyfe/playlyfe-js-sdk",
+  "authors": [
+    "Johny Jose <johny@playlyfe.com>"
+  ],
+  "description": "JS SDK for the Playlyfe API",
+  "main": "lib/pl.min.js",
+  "keywords": [
+    "playlyfe",
+    "sdk"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
