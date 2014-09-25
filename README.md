@@ -30,7 +30,7 @@ You can now make an API call to Playlyfe using the ```api``` function.
 
 
 ## Complete Example
-Below is a complete simple single page application that fetches and displays the player's profile information after logging in.
+Below is a simple single page application that opens up a notification stream to receive notifications.
 
     <!DOCTYPE html>
     <html>
@@ -80,7 +80,6 @@ Initializes the sdk with the given configuration.
     <tr><td>client_id</td><td>Client ID of the application.</td></tr>
     <tr><td>redirect_uri</td><td>URI to which the user is redirected after approving the application on playlyfe.</td></tr>
     <tr><td>debug</td><td>Print debug output in the console window. (default: false)</td></tr>
-    <tr><td>proxy</td><td>Server side proxy endpoint to which all api calls will be made.</td></tr>
   </tbody>
 </table>
 
