@@ -1,4 +1,5 @@
-cat license src/engineio.js src/pl.js > lib/pl.js
-cat lib/pl.js | uglifyjs -o lib/pl.min.js
-cat lib/pl.min.js | gzip > lib/pl.min.js.gz
+rm -r ./lib
+mkdir lib
+cat license src/engineio.js src/pl.js > lib/playlyfe-js-sdk.js
+cat lib/playlyfe-js-sdk.js | uglifyjs -o lib/playlyfe-js-sdk.min.js
 

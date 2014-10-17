@@ -99,5 +99,21 @@ Returns a url that can be used to logout of the application on Playlyfe. Can onl
 ### openNotificationStream(environment, game_id, player_id, token, success_handler, error_handler)
 Open a notification stream for the specified player in a game in a particular environment (staging or production). The token value here must be obtained from the route `/notifications/token` after authenticating the client. You can also pass in the token information from your own backend after generating it over there through a server side API to the `/notifications/token` endpoint.
 
+
+## Contributing
+If you have a problem with the usage, or face a bug, use the [Issue-Tracker](https://github.com/playlyfe/playlyfe-js-sdk/issues "A list of the bugz").
+
+If you want to contribute to the code, then all our code resides in the `src/pl.js` file, and that's the file you'll need to look into. For building the library, use the `build` script located in the root folder. For using the build script, you'll need a linux machine and the `uglify-js` library (for minification).
+
+For installing the `uglify-js` node package globally, write in your shell:
+```shell
+sudo npm install -g uglify-js
+```
+and then, run the build script:
+```shell
+./build.sh
+```
+... and when everything's all right, send us a pull request!
+
 ## License
 [The MIT License](http://opensource.org/licenses/MIT)
