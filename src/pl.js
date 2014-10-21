@@ -206,8 +206,9 @@
           window.location = this.getLoginLink();
         };
 
-        this.logout = function() {
-          window.location = this.getLogoutLink();
+        this.logout = function(callback) {
+          this.api('/logout','POST', callback);
+          Cookie.remove(c_access_token);
         };
 
         if (Cookie.get(c_access_token) != null) {
