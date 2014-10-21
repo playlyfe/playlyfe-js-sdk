@@ -1,3 +1,5 @@
+![Playlyfe Javascript SDK](./images/pl-js-sdk.png "Playlyfe Javascript SDK")
+
 Playlyfe Javascript SDK
 ==================
 The Playlyfe Javascript allows developers to access the Playlyfe API in browser applications. This sdk uses the OAuth 2.0 implicit grant flow to obtain an access token which can then be used to make API calls.
