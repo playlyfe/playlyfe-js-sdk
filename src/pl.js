@@ -9,7 +9,7 @@
 
     var LOGOUT_ENDPOINT = 'https://playlyfe.com/logout';
     var TOKEN_ENDPOINT = 'https://playlyfe.com/auth';
-    var API_ENDPOINT = 'https://api.playlyfe.com/v1';
+    var API_ENDPOINT = 'https://api.playlyfe.com/';
 
     // Utility functions
     var _toString = Object.prototype.toString;
@@ -101,6 +101,7 @@
         // For simple client side implict grant flow
         settings.client_id = options.client_id;
         settings.redirect_uri = options.redirect_uri;
+        settings.version = options.version || 'v2';
 
         var session = QS.decode(window.location.hash.slice(1));
         c_access_token = 'pl_'+settings.client_id+'_access_token';
@@ -183,7 +184,7 @@
           if(settings.debug) console.log(route, method, data);
 
           ajaxOptions = {
-            url: API_ENDPOINT + route,
+            url: API_ENDPOINT + settings.version + route,
             type: method,
             dataType: 'json',
             contentType: 'application/json',

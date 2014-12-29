@@ -4,7 +4,19 @@ Playlyfe Javascript SDK
 ==================
 The Playlyfe Javascript allows developers to access the Playlyfe API in browser applications. This sdk uses the OAuth 2.0 implicit grant flow to obtain an access token which can then be used to make API calls.
 
-Visit the official [Playlyfe Developers Documentaion](http://dev.playlyfe.com/).
+Visit the official [Playlyfe Developers Documentaion](http://dev.playlyfe.com/)
+
+> Note: Breaking Changes this is the new version of the sdk which uses the Playlyfe api v2 by default if you still want to use the v1 api you can do that so by passing a version key in the options when creating a client with 'v1' as the value.
+
+ex: 
+```js
+Playlyfe.init({
+  client_id: 'YOUR_CLIENT_ID',
+  redirect_uri: 'YOUR_REDIRECT_URI',
+  version: 'v1'
+});
+```
+
 ##Usage
 
 ###Step 1: Include the Playlyfe JS SDK in your page.
@@ -18,7 +30,7 @@ This initializes the playlyfe js sdk and attempts to connect to Playlyfe. Your C
 
     Playlyfe.init({
       client_id: 'YOUR_CLIENT_ID',
-      redirect_uri: 'YOUR_REDIRECT_URI'
+      redirect_uri: 'YOUR_REDIRECT_URI',
     });
 
 Note that the page at the redirect uri must also have the Playlyfe-JS-SDK script included and configured to successfully complete the Implicit Grant Flow and store the access token which will be provided.
