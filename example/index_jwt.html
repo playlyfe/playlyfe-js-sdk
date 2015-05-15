@@ -1,0 +1,34 @@
+<html>
+  <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="../src/engineio.js"></script>
+    <script type="text/javascript" src="../src/pl.js"></script>
+    <script type="text/javascript">
+      var player_id = 'student1';
+      var env       = 'staging';
+      var game_id   = 'are';
+
+      var notification_handler = function (data) {
+        console.log("Received Notification: ", data);
+      }
+
+      // Open up a front-end client
+      var client = new Playlyfe.init({
+        version: 'v1',
+        jwt: 'Your JWT'
+      });
+      client.api('/player', function(data) {
+        console.log(data);
+      });
+      // Fetch a notification stream authorization token
+      client.api('/notifications/token', 'GET', function (data) {
+        console.log(data);
+         // Open a notification stream for a specific player
+         Playlyfe.openNotificationStream(env, game_id, player_id, data.token, notification_handler);
+      });
+    </script>
+  </head>
+  <body>
+  <h1>Logging In</h1>
+  </body>
+</html>

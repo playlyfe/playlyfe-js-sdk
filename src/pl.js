@@ -95,13 +95,21 @@
     };
 
     return {
+
       init: function(options) {
         settings.debug = options.debug;
 
-        // For simple client side implict grant flow
-        settings.client_id = options.client_id;
-        settings.redirect_uri = options.redirect_uri;
+
         settings.version = options.version || 'v2';
+        if(options.jwt) {
+          // For custom login flow
+          settings.jwt = options.jwt;
+        }
+        else {
+          // For simple client side implict grant flow
+          settings.client_id = options.client_id;
+          settings.redirect_uri = options.redirect_uri;
+        }
 
         var session = QS.decode(window.location.hash.slice(1));
         c_access_token = 'pl_'+settings.client_id+'_access_token';
@@ -170,12 +178,16 @@
 
           var access_token = this.getAccessToken();
 
-          if(access_token !== null) {
+          if (settings.jwt !== null) {
+            var query_pos = route.indexOf('?');
+            var query = (query_pos > 0) ? route.slice(query_pos + 1) : '';
+            var path = (query_pos > 0) ? route.slice(0, query_pos): route;
+            route = path + '?' + QS.encode({ jwt: settings.jwt }) + ( (query.length > 0) ? ('&' + query) : '' );
+          } else if(access_token !== null) {
             // Attach access token
             var query_pos = route.indexOf('?');
             var query = (query_pos > 0) ? route.slice(query_pos + 1) : '';
             var path = (query_pos > 0) ? route.slice(0, query_pos): route;
-
             route = path + '?' + QS.encode({ access_token: access_token }) + ( (query.length > 0) ? ('&' + query) : '' );
           } else {
             throw new Error('No access token found');

@@ -1,14 +1,15 @@
 ![Playlyfe Javascript SDK](./images/pl-js-sdk.png "Playlyfe Javascript SDK")
 
 Playlyfe Javascript SDK
-==================
+=======================
 The Playlyfe Javascript allows developers to access the Playlyfe API in browser applications. This sdk uses the OAuth 2.0 implicit grant flow to obtain an access token which can then be used to make API calls.
 
 Visit the official [Playlyfe Developers Documentaion](http://dev.playlyfe.com/)
 
 > Note: Breaking Changes this is the new version of the sdk which uses the Playlyfe api v2 by default if you still want to use the v1 api you can do that so by passing a version key in the options when creating a client with 'v1' as the value.
 
-ex: 
+## 1. Implicit Grant Flow
+In this flow you need to pass your clienr_id and redirect_uri. Then you need to authenticate your user to the playlyfe Website using the login urr and after authentication, the Playlyfe Server will make a get request to the redirect uri with the access token. Below is a simple single page application that opens up a notification stream to receive notifications.
 ```js
 Playlyfe.init({
   client_id: 'YOUR_CLIENT_ID',
@@ -16,7 +17,88 @@ Playlyfe.init({
   version: 'v1'
 });
 ```
+### Example
+```html
+<html>
+  <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script type="text/javascript" src="pl.min.js"></script>
+    <script type="text/javascript">
+      var player_id = 'YOUR_PLAYER_ID';
+      var env = 'YOUR_GAME_ENVIRONMENT ( "staging" or "production" )';
+      var game_id = 'YOUR_GAME_ID';
 
+      var notification_handler = function (data) {
+        console.log("Received Notification: ", data);
+      }
+
+      // Open up a front-end client
+      var client = new Playlyfe.init({
+        client_id: 'YOUR_CLIENT_ID',
+        redirect_uri: 'YOUR_REDIRECT_URI',
+        version: 'v1'
+      });
+      // If the user is not logged in then login
+      if (Playlyfe.getStatus().msg !== 'authenticated') {
+        client.login();
+      } else {
+        // Fetch a notification stream authorization token
+        client.api('/notifications/token?player_id=' + player_id, 'GET', function (data) {
+           // Open a notification stream for a specific player
+           Playlyfe.openNotificationStream(env, game_id, player_id, data.token, notification_handler);
+        });
+      }
+    </script>
+  </head>
+  <body>
+    <h1>Logging In</h1>
+  </body>
+</html>
+```
+
+## 2. Custom Login Flow using JWT(JSON Web Token)
+In this flow your own backend server has to generate a json web token and send it to the frontend when a user logs in. This will authenticate the user as a player on Playlyfe and make requests on his behalf. To generate the JWT you can use any of our backend sdks as they provide this functionality for you already. You can checkout [Node SDK](https://github.com/playlyfe/playlyfe-node-sdk) for more information on implementing the backend part.
+```js
+Playlyfe.init({
+ jwt: 'the json web token sent from your backend on user login'
+});
+```
+### Example
+```html
+<html>
+  <head>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js" ></script>
+    <script type="text/javascript" src="pl.min.js"></script>
+    <script type="text/javascript">
+      var player_id = 'student1';
+      var env       = 'staging';
+      var game_id   = 'are';
+
+      var notification_handler = function (data) {
+        console.log("Received Notification: ", data);
+      }
+
+      // Open up a front-end client
+      var client = new Playlyfe.init({
+        version: 'v1',
+        jwt: 'jwt token here'
+      });
+      client.api('/player', function(data) {
+        console.log(data);
+      });
+      // Fetch a notification stream authorization token
+      client.api('/notifications/token', 'GET', function (data) {
+        console.log(data);
+         // Open a notification stream for a specific player
+         Playlyfe.openNotificationStream(env, game_id, player_id, data.token, notification_handler);
+      });
+    </script>
+  </head>
+  <body>
+    <h1>Logging In</h1>
+  </body>
+</html>
+```
 ##Usage
 
 ###Step 1: Include the Playlyfe JS SDK in your page.
@@ -42,45 +124,6 @@ You can now make an API call to Playlyfe using the ```api``` function.
       console.log(data);
     });
 
-
-## Complete Example
-Below is a simple single page application that opens up a notification stream to receive notifications.
-
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-        <script type="text/javascript" src="pl.min.js"></script>
-        <script type="text/javascript">
-          var player_id = 'YOUR_PLAYER_ID';
-          var env = 'YOUR_GAME_ENVIRONMENT ( "staging" or "production" )';
-          var game_id = 'YOUR_GAME_ID';
-
-          var notification_handler = function (data) {
-            console.log("Received Notification: ", data);
-          }
-
-          // Open up a front-end client
-          var client = new Playlyfe.init({
-            client_id: 'YOUR_CLIENT_ID',
-            redirect_uri: 'YOUR_REDIRECT_URI'
-          });
-          // If the user is not logged in then login
-          if (Playlyfe.getStatus().msg !== 'authenticated') {
-            client.login();
-          } else {
-            // Fetch a notification stream authorization token
-            client.api('/notifications/token?player_id=' + player_id, 'GET', function (data) {
-               // Open a notification stream for a specific player
-               Playlyfe.openNotificationStream(env, game_id, player_id, data.token, notification_handler);
-            });
-          }
-        </script>
-      </head>
-      <body>
-      </body>
-    </html>
-
 ## Methods
 
 ### init(options)
@@ -94,6 +137,7 @@ Initializes the sdk with the given configuration.
     <tr><td>client_id</td><td>Client ID of the application.</td></tr>
     <tr><td>redirect_uri</td><td>URI to which the user is redirected after approving the application on playlyfe.</td></tr>
     <tr><td>debug</td><td>Print debug output in the console window. (default: false)</td></tr>
+    <tr><td>jwt</td><td>The Json web token of the authenticated user</td></tr>
   </tbody>
 </table>
 
@@ -114,20 +158,26 @@ Returns a url that can be used to logout of the application on Playlyfe. Can onl
 Open a notification stream for the specified player in a game in a particular environment (staging or production). The token value here must be obtained from the route `/notifications/token` after authenticating the client. You can also pass in the token information from your own backend after generating it over there through a server side API to the `/notifications/token` endpoint.
 
 
-## Contributing
-If you have a problem with the usage, or face a bug, use the [Issue-Tracker](https://github.com/playlyfe/playlyfe-js-sdk/issues "A list of the bugz").
+License
+=======
+Playlyfe JS SDK v0.0.2
+http://dev.playlyfe.com/  
+Copyright(c) 2014-2015, Playlyfe IT Solutions Pvt. Ltd, support@playlyfe.com  
 
-If you want to contribute to the code, then all our code resides in the `src/pl.js` file, and that's the file you'll need to look into. For building the library, use the `build` script located in the root folder. For using the build script, you'll need a linux machine and the `uglify-js` library (for minification).
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-For installing the `uglify-js` node package globally, write in your shell:
-```shell
-sudo npm install -g uglify-js
-```
-and then, run the build script:
-```shell
-./build.sh
-```
-... and when everything's all right, send us a pull request!
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
 
-## License
-[The MIT License](http://opensource.org/licenses/MIT)
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
