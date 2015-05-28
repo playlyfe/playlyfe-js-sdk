@@ -6,7 +6,8 @@
     <script type="text/javascript">
       var player_id = 'student1';
       var env       = 'staging';
-      var game_id   = 'are';
+      var game_id   = 'tester';
+      console.log('Initializing');
 
       var notification_handler = function (data) {
         console.log("Received Notification: ", data);
@@ -15,7 +16,7 @@
       // Open up a front-end client
       var client = new Playlyfe.init({
         version: 'v1',
-        jwt: 'Your JWT'
+        jwt: 'MWYwZGYzNTYtZGIxNy00OGM5LWExZGMtZjBjYTFiN2QxMTlh:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwbGF5ZXJfaWQiOiJzdHVkZW50MSIsInNjb3BlcyI6WyJwbGF5ZXIucnVudGltZS5yZWFkIiwicGxheWVyLnJ1bnRpbWUud3JpdGUiXSwiZXhwIjoxNDMyMjgxOTIwfQ.VO-hUBF3j_OFoG8tSX1kbh0cpFXsv-raeM02J_4SOvk'
       });
       client.api('/player', function(data) {
         console.log(data);

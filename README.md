@@ -160,7 +160,7 @@ Open a notification stream for the specified player in a game in a particular en
 
 License
 =======
-Playlyfe JS SDK v0.0.2
+Playlyfe JS SDK v1.0.0  
 http://dev.playlyfe.com/  
 Copyright(c) 2014-2015, Playlyfe IT Solutions Pvt. Ltd, support@playlyfe.com  
 
