@@ -1,5 +1,5 @@
 /**
- * Playlyfe Javascript SDK v0.0.1
+ * Playlyfe Javascript SDK v1.0.0
  * http://dev.playlyfe.com/
  * Copyright(c) 2013-2014, Playlyfe Technologies, developers@playlyfe.com
  *
