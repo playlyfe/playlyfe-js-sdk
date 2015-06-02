@@ -12,7 +12,7 @@ Visit the official [Playlyfe Developers Documentaion](http://dev.playlyfe.com/)
 If you haven't created a client for your game yet just head over to [Playlyfe](http://playlyfe.com) and login into your account, and go to the game settings and click on client.
 Select no for the first 2 questions as we aren't going to use a backend server nor do we have a login system.
 
-![implicit]![implicit](https://cloud.githubusercontent.com/assets/1687946/7930512/8340d47e-0926-11e5-8275-916d3e9ad27c.png)
+![implicit](https://cloud.githubusercontent.com/assets/1687946/7930512/8340d47e-0926-11e5-8275-916d3e9ad27c.png)
 
 In this flow you need to pass your clienr_id and redirect_uri. Then you need to authenticate your user to the playlyfe Website using the login urr and after authentication, the Playlyfe Server will make a get request to the redirect uri with the access token. Below is a simple single page application that opens up a notification stream to receive notifications.
 ```js
