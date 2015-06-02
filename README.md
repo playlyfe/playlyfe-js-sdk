@@ -1,4 +1,4 @@
-![Playlyfe Javascript SDK](./images/pl-js-sdk.png "Playlyfe Javascript SDK")
+![Playlyfe Javascript SDK](https://dev.playlyfe.com/images/assets/pl-js-sdk.png "Playlyfe Javascript SDK")
 
 Playlyfe Javascript SDK
 =======================
@@ -9,6 +9,11 @@ Visit the official [Playlyfe Developers Documentaion](http://dev.playlyfe.com/)
 > Note: Breaking Changes this is the new version of the sdk which uses the Playlyfe api v2 by default if you still want to use the v1 api you can do that so by passing a version key in the options when creating a client with 'v1' as the value.
 
 ## 1. Implicit Grant Flow
+If you haven't created a client for your game yet just head over to [Playlyfe](http://playlyfe.com) and login into your account, and go to the game settings and click on client.
+Select no for the first 2 questions as we aren't going to use a backend server nor do we have a login system.
+
+![implicit]![implicit](https://cloud.githubusercontent.com/assets/1687946/7930512/8340d47e-0926-11e5-8275-916d3e9ad27c.png)
+
 In this flow you need to pass your clienr_id and redirect_uri. Then you need to authenticate your user to the playlyfe Website using the login urr and after authentication, the Playlyfe Server will make a get request to the redirect uri with the access token. Below is a simple single page application that opens up a notification stream to receive notifications.
 ```js
 Playlyfe.init({
