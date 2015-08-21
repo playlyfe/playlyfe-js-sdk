@@ -129,6 +129,32 @@ You can now make an API call to Playlyfe using the ```api``` function.
       console.log(data);
     });
 
+
+# Client Scopes
+![Client](https://cloud.githubusercontent.com/assets/1687946/9349193/e00fe91c-465f-11e5-8094-6e03c64a662c.png)
+
+Your client has certain access control restrictions. There are 3 kind of resources in the Playlyfe REST API they are,
+
+1.`/admin` -> routes for you to perform admin actions like making a player join a team
+
+2.`/design` -> routes for you to make design changes programmatically
+
+3.`/runtime` -> routes which the users will generally use like getting a player profile, playing an action
+
+The resources accessible to this client can be configured to have a read permission that means only `GET` requests will work.
+
+The resources accessible to this client can be configured to have a write permission that means only `POST`, `PATCH`, `PUT`, `DELETE` requests will work.
+
+The version restriction is only for the design resource and can be used to restrict the client from accessing any version of the game design other than the one specified. By default it allows all.
+
+If access to a route is not allowed and then you make a request to that route then you will get an error like this,
+```json
+{
+  "error": "access_denied",
+  "error_description": "You are not allowed to access this api route"
+}
+```
+
 ## Methods
 
 ### init(options)
