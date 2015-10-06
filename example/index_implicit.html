@@ -1,9 +1,10 @@
 <html>
   <head>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
-    <script type="text/javascript" src="pl.min.js"></script>
+    <script type="text/javascript" src="../src/engineio.js"></script>
+    <script type="text/javascript" src="../src/pl.js"></script>
     <script type="text/javascript">
-      var player_id = 'YOUR_PLAYER_ID';
+      var player_id = 'student1';
       var env = 'YOUR_GAME_ENVIRONMENT ( "staging" or "production" )';
       var game_id = 'YOUR_GAME_ID';
 
@@ -13,15 +14,19 @@
 
       // Open up a front-end client
       var client = new Playlyfe.init({
-        client_id: 'YOUR_CLIENT_ID',
-        redirect_uri: 'YOUR_REDIRECT_URI'
+        version: 'v2',
+        player_id: player_id,
+        client_id: 'YjRlNWZlZDgtMGZiMS00ZTAwLThmMjktZDlmMjc4ZWQ3N2U3', //'YOUR_CLIENT_ID',
+        redirect_uri: 'http://localhost:3000' //'YOUR_REDIRECT_URI'
       });
       // If the user is not logged in then login
       if (Playlyfe.getStatus().msg !== 'authenticated') {
         client.login();
       } else {
         // Fetch a notification stream authorization token
-        client.api('/notifications/token?player_id=' + player_id, 'GET', function (data) {
+        client.api('/runtime/player', 'GET', function (data) {
+        })
+        client.api('/runtime/notifications/token?player_id=' + player_id, 'GET', function (data) {
            // Open a notification stream for a specific player
            Playlyfe.openNotificationStream(env, game_id, player_id, data.token, notification_handler);
         });

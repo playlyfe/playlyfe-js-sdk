@@ -13,16 +13,21 @@
         console.log("Received Notification: ", data);
       }
 
+      var token = 'NDgyM2RkZWUtYTdiYi00Njg5LWJlZGEtODA4OWY1MTZkYWEx:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwbGF5ZXJfaWQiOiJzdHVkZW50MSIsInNjb3BlcyI6W10sImlhdCI6MTQ0NDEzOTI3MSwiZXhwIjo1MDQ0MTM5MjcxfQ.WUtsKNtHKXK1gZtjax7Besb48HUlYuoxycL-nNeQ4dc'
+
       // Open up a front-end client
       var client = new Playlyfe.init({
-        version: 'v1',
-        jwt: 'MWYwZGYzNTYtZGIxNy00OGM5LWExZGMtZjBjYTFiN2QxMTlh:eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwbGF5ZXJfaWQiOiJzdHVkZW50MSIsInNjb3BlcyI6WyJwbGF5ZXIucnVudGltZS5yZWFkIiwicGxheWVyLnJ1bnRpbWUud3JpdGUiXSwiZXhwIjoxNDMyMjgxOTIwfQ.VO-hUBF3j_OFoG8tSX1kbh0cpFXsv-raeM02J_4SOvk'
+        version: 'v2',
+        jwt: token
       });
-      client.api('/player', function(data) {
+      client.api('/runtime/player', function(data) {
+        console.log(data);
+      });
+      client.api('/runtime/assets/game', function(data) {
         console.log(data);
       });
       // Fetch a notification stream authorization token
-      client.api('/notifications/token', 'GET', function (data) {
+      client.api('/notifications/token?player_id='+player_id, 'GET', function (data) {
         console.log(data);
          // Open a notification stream for a specific player
          Playlyfe.openNotificationStream(env, game_id, player_id, data.token, notification_handler);
