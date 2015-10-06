@@ -178,7 +178,7 @@
 
           var access_token = this.getAccessToken();
 
-          if (settings.jwt !== null) {
+          if (settings.jwt != null) {
             var query_pos = route.indexOf('?');
             var query = (query_pos > 0) ? route.slice(query_pos + 1) : '';
             var path = (query_pos > 0) ? route.slice(0, query_pos): route;
@@ -198,7 +198,6 @@
           ajaxOptions = {
             url: API_ENDPOINT + settings.version + route,
             type: method,
-            dataType: 'json',
             contentType: 'application/json',
             processData: false,
             crossDomain: true,
