@@ -14,7 +14,9 @@ Select no for the first 2 questions as we aren't going to use a backend server n
 
 ![implicit](https://cloud.githubusercontent.com/assets/1687946/7930512/8340d47e-0926-11e5-8275-916d3e9ad27c.png)
 
-In this flow you need to pass your clienr_id and redirect_uri. Then you need to authenticate your user to the playlyfe Website using the login urr and after authentication, the Playlyfe Server will make a get request to the redirect uri with the access token. Below is a simple single page application that opens up a notification stream to receive notifications.
+| Note: The Implicit Flow works only in production as the player has to be a user on playlyfe. So create a client in production only.
+
+In this flow you need to pass your client_id and redirect_uri. Then you need to authenticate your user to the playlyfe Website using the login url and after authentication, the Playlyfe Server will make a get request to the redirect uri with the access token. Below is a simple single page application that opens up a notification stream to receive notifications.
 ```js
 Playlyfe.init({
   client_id: 'YOUR_CLIENT_ID',
@@ -116,6 +118,7 @@ The js sdk requires an ajax transport to function properly. Since jQuery has bec
 This initializes the playlyfe js sdk and attempts to connect to Playlyfe. Your Client ID and can be found in the clients menu in the Game Builder.
 
     Playlyfe.init({
+      version: 'v2',
       client_id: 'YOUR_CLIENT_ID',
       redirect_uri: 'YOUR_REDIRECT_URI',
     });
@@ -191,7 +194,7 @@ Open a notification stream for the specified player in a game in a particular en
 
 License
 =======
-Playlyfe JS SDK v1.0.0  
+Playlyfe JS SDK  
 http://dev.playlyfe.com/  
 Copyright(c) 2014-2015, Playlyfe IT Solutions Pvt. Ltd, support@playlyfe.com  
 
